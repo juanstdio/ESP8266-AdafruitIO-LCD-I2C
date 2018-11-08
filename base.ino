@@ -51,27 +51,24 @@ byte quiz[8] = {
 // Screen
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
+/* NO te olvides de cambiar esto por si tenes múltiples pantallaassss */
+#define direccionLCD = 0x27
 
-LiquidCrystal_I2C lcd(0x27,20,4);
-
-// Lamparita para check de conexion
-const int lamp_pin = 1;
+LiquidCrystal_I2C lcd(direccionLCD,20,4);
 
 // Parametros wifi
-#define WLAN_SSID       "ssid"
-#define WLAN_PASS       "Tupasswd"
+#define WLAN_SSID       "nombreDeTuWifi"
+#define WLAN_PASS       "TuContraseña"
 
 
-// Adafruit IO, conseguir Credenciales en io.adafruit.com
+// Adafruit IO, conseguir Credenciales en https://io.adafruit.com
 #define AIO_SERVER      "Conseguir"
 #define AIO_SERVERPORT  1883
 #define AIO_USERNAME    "en"
-#define AIO_KEY         "Adafruit"
+#define AIO_KEY         "Adafruit IO"
 
-// Functions
+// Funciones
 void connect();
-#define led_pin 16
-#define notification 2
 
 WiFiClient client;
 
@@ -100,13 +97,8 @@ Adafruit_MQTT_Subscribe Display_lcd = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAM
 /*************************** Sketch Code ************************************/
 
 void setup() {
-
-  
-  pinMode(led_pin, OUTPUT);
-  pinMode(notification,OUTPUT);
-  
-  Serial.begin(115200);
-  
+   Serial.begin(115200);
+  /* Se inicializa el LCD */
   lcd.init();
   lcd.backlight();
   lcd.setCursor(0,0);
@@ -127,7 +119,7 @@ void setup() {
       lcd.print(F("Conectando a "));
         lcd.setCursor(0,2);
           lcd.print(WLAN_SSID);
-
+ // Iniciamos la conexión
   WiFi.begin(WLAN_SSID, WLAN_PASS);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -135,17 +127,17 @@ void setup() {
   }
   Serial.println();
 
-  Serial.println(F("Conectado a Wifii"));
+  Serial.println(F("Conectado a Wifi"));
   
   Serial.println(F("IP: "));
   lcd.setCursor(0,3);
   lcd.print(WiFi.localIP());
   Serial.println(WiFi.localIP());
 
-  // listen for events on the Display_lcd feed
+  // aca ponemos en "escucha" a los feeds que estén relacionados a Display_lcd
   mqtt.subscribe(&Display_lcd);
 
-  // connect to adafruit io
+  // Conectar a Adafruit.io
   connect();
 
 }
@@ -156,8 +148,10 @@ void loop() {
 
   // Esto es unicamente para que en caso que pierda la conexión, no se altere nada.
   if(! mqtt.ping(2)) {
-    // reconnect to adafruit io
-    connect(); lcd.setCursor(0,0); lcd.print("Conexion perdida!");
+    // Se reconecta por si pierde la conexión
+    lcd.setCursor(0,0);
+      lcd.print("Conexion perdida!");
+        connect();
     if(! mqtt.connected()){}
   }
 
