@@ -176,9 +176,7 @@ void loop() {
       else if (message == "ON") { for (int fadeValue = 20 ; fadeValue >= 0; fadeValue -= 1) {lcd.setCursor(fadeValue,0); delay(3); lcd.write((uint8_t)0); lcd.setCursor(20-fadeValue,1); delay(3); lcd.write((uint8_t)0);lcd.setCursor(fadeValue,2); delay(3); lcd.write((uint8_t)0);lcd.setCursor(20-fadeValue,3); delay(3); lcd.write((uint8_t)0);}}
       else if (message == "OFF") {lcd.setCursor(0,1); lcd.write((uint8_t)2);}
       else if(message =="ANIMA"){ for (int fadeValue = 255 ; fadeValue >= 0; fadeValue -= 1){lcd.setCursor(0,1);lcd.write((uint8_t)1);delay(3);lcd.setCursor(0,1);delay(3);lcd.write((uint8_t)2);}}
-      else if (message.indexOf("Temp") >= 0) { 
-      /* Todo lo que sea distinto a lo definido, se muestra en pantalla */
-      
+    else if (message.indexOf("Temp") >= 0) { 
       lcd.clear();
               String submensaje = message.substring(0,12 );
       lcd.setCursor(0,0); 
@@ -192,6 +190,11 @@ void loop() {
       lcd.setCursor(0,2);
            lcd.print(submensaje_3);
          
+      }
+      else  /* Todo lo que sea distinto a lo definido, se muestra en pantalla */
+      {
+         lcd.setCursor(0,0); 
+          lcd.print(message);
       }
      
     }
