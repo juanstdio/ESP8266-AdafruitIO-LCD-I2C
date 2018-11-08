@@ -52,7 +52,7 @@ byte quiz[8] = {
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
 /* NO te olvides de cambiar esto por si tenes múltiples pantallaassss */
-#define direccionLCD = 0x27
+#define direccionLCD 0x27
 
 LiquidCrystal_I2C lcd(direccionLCD,20,4);
 
