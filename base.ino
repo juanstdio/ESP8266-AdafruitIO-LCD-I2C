@@ -76,20 +76,20 @@ WiFiClient client;
   Esto es requerido para usar la librería de Adafruit  */
 const char MQTT_SERVER[] PROGMEM    = AIO_SERVER;
 /* seteamos un ID de cliente MQTT usando la key de Adafruit IO + la fecha y hora del sketch que fue compilado, así se sabra
-   a que dispositivo corresponde y no debemos asignanerle un ID único a cada dispositivo.
-   de ultima podes setear un ID de cliente vos, o un valor aleatorio
+   a que dispositivo corresponde y no debemos asignarle un ID único a cada dispositivo.
+   de ultima podes setear un ID de cliente vos, con un valor aleatorio
 */
 const char MQTT_CLIENTID[] PROGMEM  = AIO_KEY __DATE__ __TIME__;
 const char MQTT_USERNAME[] PROGMEM  = AIO_USERNAME;
 const char MQTT_PASSWORD[] PROGMEM  = AIO_KEY;
 
-/* Se prepara el Cliente MQTT, pasandole como argumentos el Cliente Wifi, El servidor MQTT y detalles de login*/
+/* Se prepara el Cliente MQTT, pasandole como argumentos la clase "ClienteWiFi", El servidor MQTT y detalles de login*/
 Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVERPORT, AIO_USERNAME, AIO_KEY);
 
 /****************************** Feeds de Adafruit***************************************/
 
 /* Aca nos vamos a conectar a un feed de Adafruit IO, debemos definir el nombre que vamos a usar antes en el feed por si las dudas
-   Tener en cuenta que los paths de MQTT para Adafruit IO siguen la forma: <nombreUsuario>/feeds/<nombreFeed>
+   Tené en cuenta que los paths de MQTT para Adafruit IO siguen la forma: <nombreUsuario>/feeds/<nombreFeed>
    En este caso, yo lo llame display-lcd */
 const char pantallita[] PROGMEM = AIO_USERNAME "/feeds/display-lcd";
 Adafruit_MQTT_Subscribe Display_lcd = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/display-lcd");
