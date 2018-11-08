@@ -91,6 +91,11 @@ Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVERPORT, AIO_USERNAME, AIO
 /* Aca nos vamos a conectar a un feed de Adafruit IO, debemos definir el nombre que vamos a usar antes en el feed por si las dudas
    Tené en cuenta que los paths de MQTT para Adafruit IO siguen la forma: <nombreUsuario>/feeds/<nombreFeed>
    En este caso, yo lo llame display-lcd */
+ 
+/*PARA PUBLICAR */
+Adafruit_MQTT_Publish confirmacion= Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/confirmacion");
+
+/*PARA RECIBIR */
 const char pantallita[] PROGMEM = AIO_USERNAME "/feeds/display-lcd";
 Adafruit_MQTT_Subscribe Display_lcd = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/display-lcd");
 
@@ -196,7 +201,14 @@ void loop() {
          lcd.setCursor(0,0); 
           lcd.print(message);
       }
-     
+         /* Estas lineas son para enviar una publicacion en un feed llamado CONFIRMACION*/     
+  Serial.println(F("\nEnviando Confirmación de recepcion... "));
+  char *respuesta = value;
+  if (! confirmacion.publish(respuesta)) {
+    Serial.println(F("Fallo!"));
+  } else {
+    Serial.println(F("Verificacion enviada!"));
+  }
     }
 
   }
