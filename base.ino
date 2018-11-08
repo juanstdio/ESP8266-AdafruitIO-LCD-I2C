@@ -43,23 +43,22 @@ byte quiz[8] = {
   0b00100
 };
 
-// Librerías requeridas
+// Librerías de ESP8266 y Adafruit
 #include <ESP8266WiFi.h>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 
-// Screen
+// Librerías para manejar la pantalla
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
-/* NO te olvides de cambiar esto por si tenes múltiples pantallaassss */
-#define direccionLCD 0x27
 
+/* Definiendo pantalla : NO TE OLVIDES de cambiar la dirección (por si tenes múltiples pantallas) */
+#define direccionLCD 0x27
 LiquidCrystal_I2C lcd(direccionLCD,20,4);
 
 // Parametros wifi
 #define WLAN_SSID       "nombreDeTuWifi"
 #define WLAN_PASS       "TuContraseña"
-
 
 // Adafruit IO, conseguir Credenciales en https://io.adafruit.com
 #define AIO_SERVER      "Conseguir"
@@ -67,7 +66,7 @@ LiquidCrystal_I2C lcd(direccionLCD,20,4);
 #define AIO_USERNAME    "en"
 #define AIO_KEY         "Adafruit IO"
 
-// Funciones
+// Funcion para conectar a IO
 void connect();
 
 WiFiClient client;
@@ -80,7 +79,9 @@ const char MQTT_SERVER[] PROGMEM    = AIO_SERVER;
    de ultima podes setear un ID de cliente vos, con un valor aleatorio
 */
 const char MQTT_CLIENTID[] PROGMEM  = AIO_KEY __DATE__ __TIME__;
+
 const char MQTT_USERNAME[] PROGMEM  = AIO_USERNAME;
+
 const char MQTT_PASSWORD[] PROGMEM  = AIO_KEY;
 
 /* Se prepara el Cliente MQTT, pasandole como argumentos la clase "ClienteWiFi", El servidor MQTT y detalles de login*/
@@ -97,26 +98,28 @@ Adafruit_MQTT_Publish confirmacion= Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/
 
 /*PARA RECIBIR */
 const char pantallita[] PROGMEM = AIO_USERNAME "/feeds/display-lcd";
+
 Adafruit_MQTT_Subscribe Display_lcd = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/display-lcd");
 
 /*************************** Sketch Code ************************************/
 
 void setup() {
+  /* COnexion serial para monitorear, no es necesario incluír en un release */
    Serial.begin(115200);
+  
   /* Se inicializa el LCD */
   lcd.init();
-  lcd.backlight();
-  lcd.setCursor(0,0);
-  lcd.print(F("AdaIO By Juanstdio "));
- 
+    lcd.backlight();
+      lcd.setCursor(0,0);
+        lcd.print(F("AdaIO By Juanstdio "));
+          Serial.println(F("AdaIO By Juanstdio"));
+  
   //Creamos los caracteres
   lcd.createChar(0, kora);
     lcd.createChar(1, hup);
       lcd.createChar(2, hdown);
         lcd.createChar(3, quiz);
-
-  Serial.println(F("AdaIO By Juanstdio"));
-
+  
   // Conectamos al Wifi
   Serial.println(); Serial.println();
   delay(10);
@@ -124,19 +127,22 @@ void setup() {
       lcd.print(F("Conectando a "));
         lcd.setCursor(0,2);
           lcd.print(WLAN_SSID);
- // Iniciamos la conexión
-  WiFi.begin(WLAN_SSID, WLAN_PASS);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(F("."));
-  }
-  Serial.println();
 
-  Serial.println(F("Conectado a Wifi"));
+  // Iniciamos la conexión
+  WiFi.begin(WLAN_SSID, WLAN_PASS);
   
-  Serial.println(F("IP: "));
-  lcd.setCursor(0,3);
-  lcd.print(WiFi.localIP());
+  while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+        Serial.print(F("."));
+ 
+    /* Si no conecta, los puntitos serán eternos...*/
+    lcd.setCursor(0,0);
+       lcd.print(".");
+  }
+  Serial.println(F("Conectado a Wifi"));
+    lcd.setCursor(0,3);
+      Serial.println(F("IP: "));
+        lcd.print(WiFi.localIP());
   Serial.println(WiFi.localIP());
 
   // aca ponemos en "escucha" a los feeds que estén relacionados a Display_lcd
@@ -144,11 +150,9 @@ void setup() {
 
   // Conectar a Adafruit.io
   connect();
-
 }
 
 void loop() {
-
   Adafruit_MQTT_Subscribe *subscription;
 
   // Esto es unicamente para que en caso que pierda la conexión, no se altere nada.
@@ -157,17 +161,15 @@ void loop() {
     lcd.setCursor(0,0);
       lcd.print("Conexion perdida!");
         connect();
-    if(! mqtt.connected()){}
+    if(! mqtt.connected()){/*Esta conectado y no hay nada para hacer...o si?*/}
   }
 
-  
-  // este es nuestro loop "Esperando paquetes del feed", podría ser mejorado
+    // este es nuestro loop principal: "Esperando paquetes del feed", podría ser mejorado
   while (subscription = mqtt.readSubscription(1000)) {
 
     // Solo nos interesan los cambios que esten relacionados a Display_lcd
     if (subscription == &Display_lcd) {
 
-      
       //Convertimos el MQTT ASCII recibido a int 
       char *value = (char *)Display_lcd.lastread;
       Serial.print(F("Recibimos: "));
@@ -176,7 +178,7 @@ void loop() {
       // Convertimos a String el valor que nos acaba de llegar para poder procesarlo
       String message = String(value);
       message.trim();
-      
+      /* Acá viene la ensalada de comandos predefinidos en mi sketch, si no los vas a utilizar, salteá a la linea 201 */
        if(message =="CLEAR") {lcd.clear();}
       else if (message == "ON") { for (int fadeValue = 20 ; fadeValue >= 0; fadeValue -= 1) {lcd.setCursor(fadeValue,0); delay(3); lcd.write((uint8_t)0); lcd.setCursor(20-fadeValue,1); delay(3); lcd.write((uint8_t)0);lcd.setCursor(fadeValue,2); delay(3); lcd.write((uint8_t)0);lcd.setCursor(20-fadeValue,3); delay(3); lcd.write((uint8_t)0);}}
       else if (message == "OFF") {lcd.setCursor(0,1); lcd.write((uint8_t)2);}
@@ -201,20 +203,17 @@ void loop() {
          lcd.setCursor(0,0); 
           lcd.print(message);
       }
-         /* Estas lineas son para enviar una publicacion en un feed llamado CONFIRMACION*/     
+  /* A partir de acá, esto se usa para enviar una publicacion en un feed llamado CONFIRMACION */     
   Serial.println(F("\nEnviando Confirmación de recepcion... "));
   char *respuesta = value;
   if (! confirmacion.publish(respuesta)) {
     Serial.println(F("Fallo!"));
   } else {
     Serial.println(F("Verificacion enviada!"));
+          }
   }
-    }
-
   }
-
 }
-
 // Conectar a Adafruit Con MQTT
 void connect() {
 
@@ -225,13 +224,13 @@ void connect() {
   while ((ret = mqtt.connect()) != 0) {
 
     switch (ret) {
-      case 1: Serial.println(F("Wrong protocol")); break;
-      case 2: Serial.println(F("ID rejected")); break;
-      case 3: Serial.println(F("Server unavail")); break;
-      case 4: Serial.println(F("Bad user/pass")); break;
-      case 5: Serial.println(F("Not authed")); break;
-      case 6: Serial.println(F("Failed to subscribe")); break;
-      default: Serial.println(F("Connection failed")); break;
+      case 1: Serial.println(F("Protocolo Incorrecto")); break;
+        case 2: Serial.println(F("ID Rechazada")); break;
+          case 3: Serial.println(F("Servidor No disponible")); break;
+            case 4: Serial.println(F("Usuario y/o Passwd incorrecta")); break;
+              case 5: Serial.println(F("No autorizado")); break;
+                case 6: Serial.println(F("Suscripcion fallida")); break;
+       default: Serial.println(F("Conexion fallida")); break;
     }
 
     if(ret >= 0)
@@ -239,9 +238,7 @@ void connect() {
 
     Serial.println(F("Reconectando...."));
     delay(5000);
-
   }
-
   Serial.println(F("Conectado a IO"));
   lcd.setCursor(0,1); lcd.print("Conectado a IO");
   delay(100);
