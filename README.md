@@ -2,7 +2,8 @@
 Programa demostrativo para conectar cualquier board con el chip ESP8266 a un Display LCD por **I2C**
 
 ***Aclaración:***
-Estamos usando liberías **LiquidCrystal_I2C** y **Adafruit_MQTT**
+Estamos usando liberías **LiquidCrystal_I2C** y **Adafruit_MQTT** :
+
 Instalarlas primero mediante el gestor de liberías de la IDE de Arduino.
 
 ***Conexión:***
